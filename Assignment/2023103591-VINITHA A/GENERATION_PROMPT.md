@@ -1,86 +1,43 @@
-\# Taskora — Generation Prompt
+# Taskora — Generation Prompt
 
+## Project Overview
 
+Taskora is a student productivity platform designed to help students manage academic tasks, organize study schedules, track deadlines, and monitor productivity.
 
-\## Project Overview
+## Generation Prompt
 
+Build a modern, responsive student productivity web application named **Taskora — Student Productivity Hub**.
 
+The application should provide a centralized workspace that enables students to manage academic responsibilities, plan study activities, and track their progress efficiently.
 
-Taskora is a student productivity platform designed to help students manage academic tasks, organize their schedules, track deadlines, and monitor their progress through a centralized workspace.
+## Core Requirements
 
+* **Dashboard:** Display an overview of tasks, upcoming deadlines, and productivity.
+* **Task Management:** Organize and manage academic tasks.
+* **Study Planner:** Plan study schedules and academic activities.
+* **Focus Workspace:** Support focused study sessions.
+* **Notes:** Organize study-related notes.
+* **Analytics:** Display task progress and productivity information.
+* **Authentication:** Provide login, registration, and password recovery interfaces.
+* **Profile:** Provide access to user profile information.
 
+## Design Requirements
 
-\## Generation Prompt
+* Create a clean, modern, and user-friendly interface.
+* Use consistent typography, spacing, and visual hierarchy.
+* Provide intuitive navigation between sections.
+* Ensure responsive layouts for desktop and mobile devices.
+* Use reusable UI components.
 
+## Technical Requirements
 
+* Use React and TypeScript for the frontend.
+* Use Vite as the development and build tool.
+* Use Tailwind CSS for styling.
+* Integrate Supabase services where required.
+* Organize code into reusable components, routes, and modules.
+* Keep sensitive credentials out of source code.
 
-Build a modern, responsive student productivity web application called \*\*Taskora\*\*.
+## Expected Outcome
 
-
-
-The application should provide a centralized dashboard where students can manage their academic responsibilities and organize their daily activities efficiently.
-
-
-
-\### Core Requirements
-
-
-
-\* \*\*Dashboard:\*\* Display an overview of tasks, productivity, and upcoming deadlines.
-
-\* \*\*Task Management:\*\* Allow students to organize and manage their tasks.
-
-\* \*\*Planner:\*\* Provide a dedicated space for planning academic activities.
-
-\* \*\*Focus:\*\* Include a workspace to support focused study sessions.
-
-\* \*\*Notes:\*\* Provide a place to organize study notes.
-
-\* \*\*Analytics:\*\* Present productivity information and task progress.
-
-\* \*\*Authentication:\*\* Provide login, signup, and password recovery pages.
-
-\* \*\*Profile:\*\* Allow students to access their profile information.
-
-\* \*\*Responsive Design:\*\* Ensure the interface works across desktop and mobile devices.
-
-
-
-\### Design Requirements
-
-
-
-\* Use a clean, modern, student-friendly interface.
-
-\* Maintain consistent typography, spacing, and visual hierarchy.
-
-\* Use reusable UI components.
-
-\* Provide intuitive navigation between application sections.
-
-\* Prioritize readability and ease of use.
-
-
-
-\### Technical Requirements
-
-
-
-\* Build the application using a modern frontend framework and TypeScript.
-
-\* Organize the source code into reusable components, routes, and modules.
-
-\* Integrate backend services where required.
-
-\* Keep configuration and sensitive credentials separate from source code.
-
-
-
-\## Expected Outcome
-
-
-
-Deliver a responsive student productivity platform that brings task management, academic planning, focus tools, notes, and productivity tracking together in one application.
-
-
-
+Deliver a responsive student productivity platform that brings task management, study planning, focus tools, notes, and productivity tracking together in one workspace.
