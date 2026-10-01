@@ -1,48 +1,23 @@
-\# Taskora — Deployment Link
+# Taskora — Deployment Link
 
+## Live Application
 
+**Deployment URL:**
+[Open Taskora](https://sharp-look-tool.lovable.app/)
 
-\## Live Application
+## Application
 
+Taskora is a student productivity platform designed to help students organize academic activities, manage tasks, track deadlines, and improve productivity.
 
+## Main Features
 
-\*\*Deployment URL:\*\*
+* Task Management
+* Academic Task Organization
+* Deadline Tracking
+* Student Productivity Dashboard
+* Task Prioritization
+* Progress Tracking
 
-https://sharp-look-tool.lovable.app/
+## Deployment Status
 
-
-
-\## Application
-
-
-
-Taskora is a student productivity and task management platform designed to help students organize academic activities, manage tasks, track deadlines, and improve productivity through a centralized workspace.
-
-
-
-\## Main Features
-
-
-
-\* Task Management
-
-\* Academic Task Organization
-
-\* Deadline Tracking
-
-\* Student Productivity Dashboard
-
-\* Task Prioritization
-
-\* Progress Tracking
-
-
-
-\## Deployment Status
-
-
-
-\*\*Status:\*\* Deployed and accessible through the URL above.
-
-
-
+**Status:** Deployed and accessible through the URL above.
