@@ -14,17 +14,7 @@ The database health check blocks backend startup until PostgreSQL is accepting c
 
 ## Production path
 
-```mermaid
-flowchart TB
-  I[Managed ingress / WAF] --> F[Static React CDN]
-  I --> API[FastAPI deployment]
-  API --> DB[(Managed PostgreSQL / pgvector)]
-  API --> Cache[Redis cache + rate limits]
-  API --> Queue[Durable queue]
-  Queue --> Workers[Agent worker deployment]
-  API --> Obs[OpenTelemetry / metrics / logs]
-  Workers --> Obs
-```
+![Rendered ResolveAI deployment diagram](assets/deployment-diagram.svg)
 
 Deploy the API statelessly with horizontal autoscaling. Send investigations that may call slow external systems to workers, using a durable queue and an idempotency key per ticket transition. Run database migrations as an isolated pre-deployment job. Store secrets in a cloud secret manager and inject them at runtime. Use TLS termination, WAF/rate limits, separate dev/test/staging/prod projects, point-in-time database recovery, and a rollbackable canary release.
 

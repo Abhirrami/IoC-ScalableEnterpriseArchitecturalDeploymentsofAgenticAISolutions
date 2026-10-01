@@ -2,32 +2,7 @@
 
 ## State and handoffs
 
-```mermaid
-sequenceDiagram
-  participant U as Customer
-  participant O as Orchestrator
-  participant C as Classifier
-  participant R as Retrieval tool
-  participant I as Investigation
-  participant A as Approver
-  U->>O: message + order ID
-  O->>C: classify and safety-screen
-  alt suspicious or unclassified
-    C-->>O: escalate
-  else supported
-    O->>R: customer-scoped order + policy lookup
-    R-->>O: bounded records
-    O->>I: eligibility verification
-    alt incomplete/ineligible
-      I-->>O: need info or escalate
-    else eligible sensitive action
-      I-->>O: replacement/refund proposal
-      O->>A: pending approval
-      A-->>O: accept or reject
-    end
-  end
-  O-->>U: status-aware response + ticket update
-```
+![Rendered ResolveAI workflow](assets/workflow-diagram.svg)
 
 ## Node contract
 
@@ -42,4 +17,4 @@ sequenceDiagram
 
 ## Failure paths and bounded execution
 
-The state machine has a six-step maximum. Each node records a trace record. An unsupported intent, suspicious instruction, absent policy, or tool failure becomes an `ESCALATED` ticket. A missing order/evidence result becomes `NEEDS_INFORMATION`. No node retries itself indefinitely; production tool adapters should use short timeouts, a limited retry policy for transient failures, circuit breakers, and dead-letter handling for asynchronous jobs.
+The state machine has a six-step maximum. Each node records a trace record. An unsupported intent, suspicious instruction, absent policy, or tool failure becomes an `ESCALATED` ticket. A missing order/evidence result becomes `NEEDS_INFORMATION`. No node retries itself indefinitely; production tool adapters should use short timeouts, a limited retry policy for transient failures, circuit breakers, and dead-letter handling for asynchronous jobs. The decision that finalises a replacement/refund is intentionally outside the agent graph and belongs to the authenticated human-approval route.
