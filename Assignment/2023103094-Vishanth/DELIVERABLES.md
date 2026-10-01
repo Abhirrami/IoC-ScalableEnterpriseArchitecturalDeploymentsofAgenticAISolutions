@@ -82,49 +82,70 @@ graph TB
 
 ## Deliverable 2: Agent Workflow Design
 
-### 2.1 Agent State Machine (FSM) Lifecycle
+### 2.1 Agent State Machine & Workflow Flowchart
 
 ```mermaid
-stateDiagram-v2
-    [*] --> IDLE
-    IDLE --> SCANNING_CVES: Webhook Triggered / Scheduled Scan
-    
-    SCANNING_CVES --> ANALYZING_VULNERABILITIES: Manifest Parsed
-    SCANNING_CVES --> FAILED: Parser Exception
-    
-    ANALYZING_VULNERABILITIES --> EVALUATING_RISK: Vulnerabilities Discovered
-    ANALYZING_VULNERABILITIES --> COMPLETED: Zero Vulnerabilities Found
-    
-    EVALUATING_RISK --> VERIFYING_SANDBOX: Low/Med Risk (Score <= 0.5)
-    EVALUATING_RISK --> AWAITING_APPROVAL: High/Breaking Risk (Score > 0.5)
-    
-    AWAITING_APPROVAL --> VERIFYING_SANDBOX: Security Admin Approved
-    AWAITING_APPROVAL --> REJECTED: Security Admin Rejected
-    
-    VERIFYING_SANDBOX --> GENERATING_PR: Tests Passed in Sandbox
-    VERIFYING_SANDBOX --> FAILED: Sandbox Test Suite Regression
-    
-    GENERATING_PR --> COMPLETED: Pull Request Opened & Logged
-    
-    REJECTED --> COMPLETED: Handoff Closed (No Patch Applied)
-    FAILED --> EXCEPTION_RECOVERY: Retry Sandbox Task
-    EXCEPTION_RECOVERY --> VERIFYING_SANDBOX: Retry Count < 3
-    EXCEPTION_RECOVERY --> FAILED: Max Retries Exceeded
+flowchart TD
+    classDef startState fill:#6366f1,stroke:#4f46e5,color:#fff,font-weight:bold
+    classDef processState fill:#1e293b,stroke:#06b6d4,color:#fff
+    classDef decisionState fill:#312e81,stroke:#a5b4fc,color:#fff,font-weight:bold
+    classDef humanState fill:#78350f,stroke:#f59e0b,color:#fff,font-weight:bold
+    classDef successState fill:#064e3b,stroke:#10b981,color:#fff,font-weight:bold
+    classDef failState fill:#881337,stroke:#f43f5e,color:#fff,font-weight:bold
+
+    Start(["🚀 Trigger: Scheduled Cron / GitHub Webhook"]):::startState --> State1
+
+    subgraph DiscoveryPhase ["Phase 1: Vulnerability Scan & Analysis"]
+        State1["🔍 IDLE → SCANNING_CVES<br/>(Parse package.json / pom.xml)"]:::processState
+        State1 --> State2["📐 ANALYZING_VULNERABILITIES<br/>(Cross-reference NVD CVE Feed)"]:::processState
+    end
+
+    State2 --> CheckDrift{"CVEs Found?"}:::decisionState
+    CheckDrift -- "No CVEs" --> EndSuccess["✔ COMPLETED<br/>(System Clean & In Sync)"]:::successState
+    CheckDrift -- "CVEs Discovered" --> State3
+
+    subgraph SecurityPhase ["Phase 2: Security Guardrail & Risk Gate"]
+        State3["🔒 EVALUATING_RISK<br/>(Run SecretSanitizerGuardrail)"]:::processState
+        State3 --> CheckRisk{"Risk Score > 0.5<br/>or Major Version?"}:::decisionState
+    end
+
+    subgraph HumanGovernance ["Phase 3: Human-in-the-Loop Governance"]
+        CheckRisk -- "YES: High Risk" --> StateApproval["⚠️ AWAITING_APPROVAL<br/>(Issue Ticket & Pause FSM)"]:::humanState
+        StateApproval --> HumanDecision{"Security Admin<br/>Decision?"}:::decisionState
+        HumanDecision -- "REJECT" --> StateRejected["✖ REJECTED<br/>(Handoff Closed & Aborted)"]:::failState
+        StateRejected --> EndSuccess
+    end
+
+    CheckRisk -- "NO: Low/Med Risk" --> State4
+    HumanDecision -- "APPROVE" --> State4
+
+    subgraph ExecutionPhase ["Phase 4: Sandbox Verification & PR Deployment"]
+        State4["🧪 VERIFYING_SANDBOX<br/>(Run Ephemeral Container Tests)"]:::processState
+        State4 --> TestCheck{"Sandbox Tests<br/>Passed?"}:::decisionState
+        
+        TestCheck -- "PASS (42/42)" --> State5["📦 GENERATING_PR<br/>(Open GitHub Remediation PR)"]:::processState
+        State5 --> EndComplete["✔ COMPLETED<br/>(PR Opened & Audit Logged)"]:::successState
+
+        TestCheck -- "FAIL (Build Error)" --> StateFail["❌ FAILED<br/>(Trigger Jittered Retry)"]:::failState
+        StateFail --> RetryCheck{"Retry Count < 3?"}:::decisionState
+        RetryCheck -- "Yes" --> State4
+        RetryCheck -- "No (Exceeded)" --> EndFail["💥 FAILED<br/>(Alert DevOps Team)"]:::failState
+    end
 ```
 
-### 2.2 Roles, Tools, Handoffs & Failure Paths
+### 2.2 Roles, Tools, Handoffs & Exception Governance
 
-- **Agent Roles**:
-  - `Scanner Agent`: Parses project manifests and correlates dependencies with CVE identifiers.
-  - `Risk Assessment Agent`: Evaluates CVSS v3.1 scores and semver version deltas.
-  - `Remediation Agent`: Applies patches in isolated sandboxes and opens GitHub Pull Requests.
-- **Human-in-the-Loop Handoff**:
-  - Triggered automatically when risk score > 0.5 (e.g. Major version update like `v1.x` -> `v2.x` or CVSS score >= 8.0).
-  - Execution is paused, issuing a cryptographically signed approval ticket to the Streamlit Operations Dashboard & Slack.
-  - Workflow resumes ONLY upon receiving an authorized `APPROVED` signature from a Security Admin.
-- **Failure & Exception Paths**:
-  - Ephemeral sandbox test regressions abort PR creation and tag dependency update as `NEEDS_REFACTOR`.
-  - Network timeouts trigger jittered exponential backoff ($2^n \times 1000\text{ms} \pm \text{jitter}$).
+#### Agent Persona & Sub-Agent Roles
+| Role Name | Primary Responsibility | Input Artifacts | Output Artifacts |
+| :--- | :--- | :--- | :--- |
+| **Scanner Agent** | Parses project manifests and matches CVE database feeds. | `package.json`, `pom.xml` | Raw CVE Vulnerability Inventory |
+| **Risk Evaluator Agent** | Calculates CVSS v3.1 scores & semver version upgrade deltas. | CVE Vulnerability List | Breaking Risk Score (0.0 - 1.0) |
+| **Remediation Agent** | Applies patches in sandboxes, verifies test suites, and opens PRs. | Approved Dependency Version | GitHub PR & SHA-256 Audit Entry |
+
+#### Human-in-the-Loop Approval & Failure Recovery
+- **Human Gate Trigger**: Pauses execution automatically whenever Risk Score > 0.5 or major breaking semver version update is detected.
+- **Approval Signature**: Requires authenticated Security Admin signature via Streamlit Operations Dashboard or Slack webhook.
+- **Fault Recovery**: Applies jittered exponential backoff ($2^n \times 1000\text{ms} \pm \text{jitter}$) on network API timeouts; max 3 retries before alerting DevOps.
 
 ---
 
