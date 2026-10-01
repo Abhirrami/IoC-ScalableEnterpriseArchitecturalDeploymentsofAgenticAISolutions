@@ -20,3 +20,5 @@ run_out.txt
 company_map.json
 .pytest_cache/
 company_map.json
+.superpowers/
+docs/superpowers/
