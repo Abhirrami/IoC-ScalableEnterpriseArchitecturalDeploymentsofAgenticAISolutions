@@ -1,8 +1,12 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from pathlib import Path
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .orchestrator import run_workflow
 from .schemas import ApprovalRequest, LoginRequest, TicketCreate, TicketOut
@@ -11,6 +15,7 @@ from .store import AUDIT_LOGS, TICKETS, USERS, add_ticket, audit, get_ticket, no
 
 app = FastAPI(title="ResolveAI Support API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 @app.get("/api/health")
@@ -65,3 +70,12 @@ def dashboard(user: dict = Depends(require_roles("support_agent", "approver", "a
     resolved = counts["RESOLVED"]
     average_ms = round(sum(ticket.get("workflow_duration_ms", 0) for ticket in items) / total, 2) if total else 0
     return {"total_tickets": total, "workflow_resolved_rate": round((resolved / total * 100), 1) if total else 0, "average_workflow_ms": average_ms, "escalation_rate": round((counts["ESCALATED"] / total * 100), 1) if total else 0, "status_counts": counts, "tool_success_rate": 100.0, "pending_approvals": counts["PENDING_APPROVAL"], "audit_events": len(AUDIT_LOGS), "estimated_tokens": total * 420, "estimated_cost_usd": round(total * 0.002, 4)}
+
+
+if STATIC_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def frontend(full_path: str) -> FileResponse:
+        """Serve the React SPA after all /api routes have been registered."""
+        return FileResponse(STATIC_DIR / "index.html")

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API = import.meta.env.VITE_API_BASE_URL || (window.location.port === '5173' ? 'http://localhost:8000' : window.location.origin);
 const demo = { customer: 'customer@resolveai.demo', approver: 'manager@resolveai.demo', password: 'DemoPass!23' };
 
 async function call(path, method = 'GET', token, body) {
