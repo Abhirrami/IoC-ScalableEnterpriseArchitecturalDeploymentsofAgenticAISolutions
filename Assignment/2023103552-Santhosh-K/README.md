@@ -6,6 +6,10 @@
 
 ResolveAI is a demonstrable enterprise support application. It routes a customer complaint through a controlled multi-agent workflow, retrieves mock order and policy data, checks eligibility, proposes an action, and requires a human approver before a replacement or refund can be finalised.
 
+## Live Demo
+
+The application is deployed and accessible at: **[https://resolveai-2023103552-santhosh-k.onrender.com](https://resolveai-2023103552-santhosh-k.onrender.com)**
+
 ## What is included
 
 - `application_prompt.md` — reusable implementation prompt.
