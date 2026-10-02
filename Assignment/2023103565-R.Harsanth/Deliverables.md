@@ -1,1704 +1,1053 @@
-\# AEGISDESK — Agentic IT Support Demonstrator
+# AEGISDESK — Agentic IT Support Demonstrator
 
+**Student:** R. Harsanth
+**Register Number:** 2023103565
+**Project:** AEGISDESK — Agentic IT Support Demonstrator
 
+---
 
-\## Capstone Deliverables
+# 1. Architecture Diagram
 
+## 1.1 High-Level Architecture
 
+AEGISDESK uses a layered architecture that separates user interaction, agent orchestration, safety controls, controlled actions, and monitoring.
 
-\*\*Student:\*\* R. Harsanth
+The main request path is intentionally simple:
 
-\*\*Register Number:\*\* 2023103565
-
-\*\*Project:\*\* AEGISDESK — Agentic IT Support Demonstrator
-
-
-
-\---
-
-
-
-\# 1. Architecture Diagram
-
-
-
-\## 1.1 Architecture Overview
-
-
-
-AEGISDESK is designed as a layered agentic IT support architecture. The system separates user interaction, request orchestration, knowledge retrieval, policy enforcement, tool execution, human approval, and observability.
-
-
-
-The demonstrator currently uses local knowledge and simulated IT tools. Enterprise integrations are represented as controlled future adapters so that the architecture can evolve without allowing the prototype to accidentally perform real administrative actions.
-
-
-
-\## 1.2 Architecture Diagram
-
-
+**User → Agent → Policy → Safe Action / Human Approval → Audit**
 
 ```mermaid
-
 flowchart TB
+    USER["Employee / Support User"]
+    UI["Web Interface"]
+    AGENT["Agent Orchestrator"]
+    POLICY["Policy & Safety"]
+    ACTION["Controlled IT Tools"]
+    APPROVAL["Human Approval"]
+    OBS["Audit & Monitoring"]
 
-&#x20;   U\[Support User / Staff] --> UI\[AEGISDESK Web UI]
+    USER --> UI
+    UI --> AGENT
+    AGENT --> POLICY
 
+    POLICY -->|"Safe request"| ACTION
+    POLICY -->|"Protected request"| APPROVAL
 
+    APPROVAL -->|"Approved"| ACTION
+    APPROVAL -->|"Rejected"| OBS
 
-&#x20;   subgraph APP\["Trust Boundary: AEGISDESK Application Runtime"]
-
-&#x20;       UI --> API\[FastAPI API]
-
-
-
-&#x20;       API --> ORCH\[Agent Orchestrator]
-
-
-
-&#x20;       ORCH --> P\[Planner / Router]
-
-
-
-&#x20;       P --> R\[Knowledge Retrieval]
-
-&#x20;       R --> KB\[(Local Support Knowledge)]
-
-
-
-&#x20;       ORCH --> PG\[Policy \& Guardrail Gate]
-
-
-
-&#x20;       PG --> T\[Simulated IT Tools]
-
-
-
-&#x20;       T --> WIFI\[Wi-Fi Diagnostic]
-
-&#x20;       T --> VPN\[VPN Diagnostic]
-
-&#x20;       T --> ACC\[Account Status]
-
-&#x20;       T --> TKT\[Simulated Ticketing]
-
-
-
-&#x20;       PG --> AQ\[(Approval Queue)]
-
-&#x20;       AQ --> OP\[Authorized Human Approver]
-
-
-
-&#x20;       ORCH --> RESP\[Response Composer]
-
-
-
-&#x20;       ORCH --> AUD\[(Audit / Request Events)]
-
-
-
-&#x20;       API --> OBS\[Metrics / Health / Audit APIs]
-
-&#x20;       OBS --> MON\[Operations Dashboard]
-
-&#x20;   end
-
-
-
-&#x20;   subgraph EXT\["External Integration Boundary"]
-
-&#x20;       SYS\[Future Enterprise Systems]
-
-&#x20;   end
-
-
-
-&#x20;   T -. "Future controlled adapters" .-> SYS
-
+    ACTION --> OBS
 ```
 
+### Future Enterprise Integrations
 
-
-\## 1.3 Architectural Layers
-
-
-
-\### Layer 1 — Experience Layer
-
-
-
-The web interface provides the support interaction surface.
-
-
-
-Responsibilities:
-
-
-
-\* submit support requests;
-
-\* display agent responses;
-
-\* display retrieved evidence;
-
-\* display workflow traces;
-
-\* provide access to the operations dashboard;
-
-\* display pending approval requests.
-
-
-
-\### Layer 2 — API Layer
-
-
-
-The FastAPI service provides the application interface.
-
-
-
-Responsibilities:
-
-
-
-\* receive requests;
-
-\* validate request payloads;
-
-\* expose chat functionality;
-
-\* expose approval APIs;
-
-\* expose audit and metrics APIs;
-
-\* expose health information;
-
-\* serve the frontend.
-
-
-
-\### Layer 3 — Agent Orchestration Layer
-
-
-
-The orchestration layer coordinates the agent workflow.
-
-
-
-Major components:
-
-
-
-\* Planner/Router;
-
-\* Knowledge Retriever;
-
-\* Policy Gate;
-
-\* Tool Executor;
-
-\* Response Composer.
-
-
-
-This separation makes it possible to enforce policy before an action reaches a tool.
-
-
-
-\### Layer 4 — Knowledge Layer
-
-
-
-AEGISDESK uses a local internal support knowledge base containing guidance for:
-
-
-
-\* Wi-Fi troubleshooting;
-
-\* VPN access;
-
-\* account recovery;
-
-\* support tickets.
-
-
-
-The knowledge layer provides supporting evidence for the response rather than allowing the agent to rely only on free-form generation.
-
-
-
-\### Layer 5 — Tool Layer
-
-
-
-The demonstrator provides simulated tools for:
-
-
-
-\* Wi-Fi diagnostics;
-
-\* VPN diagnostics;
-
-\* account status;
-
-\* ticket creation.
-
-
-
-The simulated tools intentionally do not contact external enterprise systems.
-
-
-
-\### Layer 6 — Governance Layer
-
-
-
-The governance layer provides:
-
-
-
-\* policy checks;
-
-\* protected-action detection;
-
-\* approval gating;
-
-\* human authorization;
-
-\* safe failure behavior;
-
-\* audit events.
-
-
-
-Sensitive actions cannot bypass this layer.
-
-
-
-\### Layer 7 — Observability Layer
-
-
-
-The system exposes:
-
-
-
-\* health;
-
-\* metrics;
-
-\* audit events;
-
-\* request identifiers;
-
-\* workflow stages;
-
-\* approval activity.
-
-
-
-The operations dashboard consumes these interfaces.
-
-
-
-\### Layer 8 — Deployment Layer
-
-
-
-The application is packaged using Docker and Docker Compose.
-
-
-
-This provides:
-
-
-
-\* reproducible runtime;
-
-\* dependency isolation;
-
-\* simple local deployment;
-
-\* restart behavior;
-
-\* a clear migration path toward container orchestration.
-
-
-
-\---
-
-
-
-\## 1.4 Trust Boundaries
-
-
-
-\### Boundary 1 — User to Application
-
-
-
-User-provided input is treated as untrusted.
-
-
-
-Controls:
-
-
-
-\* request validation;
-
-\* controlled routing;
-
-\* no direct tool access;
-
-\* policy evaluation before protected actions.
-
-
-
-\### Boundary 2 — Agent to Tools
-
-
-
-The agent cannot freely execute arbitrary operations.
-
-
-
-Controls:
-
-
-
-\* narrow simulated tool interfaces;
-
-\* policy gate;
-
-\* explicit action routing;
-
-\* auditable execution.
-
-
-
-\### Boundary 3 — Protected Action
-
-
-
-Account/device changes represent a higher-risk boundary.
-
-
-
-Controls:
-
-
-
-\* protected-action detection;
-
-\* approval queue;
-
-\* authorized human approval;
-
-\* no automatic sensitive execution.
-
-
-
-\### Boundary 4 — External Enterprise Systems
-
-
-
-Future integrations such as identity systems, ticketing platforms, network systems, or device-management platforms should be accessed only through controlled adapters.
-
-
-
-Production adapters should implement:
-
-
-
-\* authentication;
-
-\* authorization;
-
-\* least privilege;
-
-\* timeouts;
-
-\* bounded retries;
-
-\* idempotency;
-
-\* audit logging;
-
-\* failure isolation.
-
-
-
-\### Boundary 5 — Operations
-
-
-
-Operational information should be restricted to authorized operators and administrators in a production implementation.
-
-
-
-\---
-
-
-
-\# 2. Agent Workflow Design
-
-
-
-\## 2.1 Agent Roles
-
-
-
-| Role                | Responsibility                                       |
-
-| ------------------- | ---------------------------------------------------- |
-
-| Support User        | Submits an IT support request                        |
-
-| Planner / Router    | Classifies the request and selects the workflow      |
-
-| Knowledge Retriever | Retrieves relevant internal guidance                 |
-
-| Policy Gate         | Determines whether the requested action is permitted |
-
-| Tool Executor       | Runs an allowed diagnostic or simulated tool         |
-
-| Human Approver      | Reviews protected actions                            |
-
-| Response Composer   | Produces the final user-facing result                |
-
-| Operations Observer | Monitors health, safety and workflow activity        |
-
-
-
-\## 2.2 Workflow States
-
-
+Enterprise systems are kept behind the controlled tool layer rather than being accessed directly by the agent.
 
 ```mermaid
+flowchart LR
+    TOOLS["Controlled Tool Gateway"]
 
-stateDiagram-v2
+    IDENTITY["Enterprise Identity"]
+    TICKETING["ITSM / Ticketing"]
+    ENDPOINT["Endpoint Management"]
+    NETWORK["Network / VPN"]
 
-&#x20;   \[\*] --> Received
-
-
-
-&#x20;   Received --> Planned
-
-
-
-&#x20;   Planned --> Retrieved
-
-
-
-&#x20;   Retrieved --> PolicyCheck
-
-
-
-&#x20;   PolicyCheck --> ToolExecution: Safe action
-
-&#x20;   PolicyCheck --> AwaitingApproval: Protected action
-
-&#x20;   PolicyCheck --> Failed: Policy/tool error
-
-
-
-&#x20;   AwaitingApproval --> Approved
-
-&#x20;   AwaitingApproval --> Rejected
-
-
-
-&#x20;   Approved --> ToolExecution
-
-&#x20;   Rejected --> Response
-
-
-
-&#x20;   ToolExecution --> Response
-
-&#x20;   ToolExecution --> Failed
-
-
-
-&#x20;   Failed --> Response
-
-
-
-&#x20;   Response --> Audited
-
-&#x20;   Audited --> \[\*]
-
+    TOOLS -.-> IDENTITY
+    TOOLS -.-> TICKETING
+    TOOLS -.-> ENDPOINT
+    TOOLS -.-> NETWORK
 ```
 
+> Solid connections represent the main demonstrator workflow. Dashed connections represent future enterprise integrations.
 
+---
 
-\## 2.3 Workflow Description
+## 1.2 Architecture Layers
 
+| Layer         | Components             | Responsibility                           |
+| ------------- | ---------------------- | ---------------------------------------- |
+| Presentation  | Web Interface          | Accept requests and display results      |
+| API           | FastAPI                | Receive requests and expose services     |
+| Agent         | Planner / Orchestrator | Understand requests and select workflows |
+| Knowledge     | Local Knowledge Base   | Provide relevant support guidance        |
+| Safety        | Policy Engine          | Evaluate actions before execution        |
+| Tools         | Simulated IT Tools     | Perform controlled diagnostics           |
+| Approval      | Human Approval Queue   | Gate protected actions                   |
+| Observability | Audit, Trace, Metrics  | Monitor and record workflows             |
+| Integration   | Enterprise Adapters    | Future connection to enterprise systems  |
 
+---
 
-\### Step 1 — Request Received
+## 1.3 Internal Agent Components
 
+The agent workflow consists of several logical components.
 
+```mermaid
+flowchart LR
+    REQUEST["User Request"]
+    PLANNER["Request Planner"]
+    KNOWLEDGE["Knowledge Retrieval"]
+    POLICY["Policy Check"]
+    TRACE["Workflow Trace"]
 
-The support user submits a request through the web interface.
+    REQUEST --> PLANNER
+    PLANNER --> KNOWLEDGE
+    KNOWLEDGE --> POLICY
+    POLICY --> TRACE
+```
 
+The planner determines the support category, retrieval provides relevant internal guidance, and the policy layer determines whether the requested operation can proceed.
 
+---
 
-The API assigns a request identifier and begins the workflow.
+## 1.4 Trust Boundaries
 
+The system contains four logical trust boundaries.
 
+### User Boundary
 
-\### Step 2 — Planning
+Natural-language requests originate from users and should be treated as untrusted input.
 
+### Application Boundary
 
+The API, planner, retrieval system, and policy engine process and validate the request.
 
-The planner identifies the likely request category and action.
+### Action Boundary
 
+Tools operate inside a controlled boundary. Protected operations cannot be executed directly by the agent.
 
+### Operations Boundary
+
+Audit logs, traces, and monitoring information are maintained separately for operational visibility.
+
+---
+
+# 2. Agent Workflow Design
+
+## 2.1 Agent Roles
+
+| Role                | Responsibility                                   |
+| ------------------- | ------------------------------------------------ |
+| User                | Submits an IT support request                    |
+| Agent Planner       | Classifies the request and selects a workflow    |
+| Knowledge Retriever | Retrieves relevant internal guidance             |
+| Policy Engine       | Determines safety and authorization requirements |
+| Tool Executor       | Executes permitted diagnostic actions            |
+| Approver            | Approves or rejects protected actions            |
+| Monitoring / Audit  | Records workflow and operational events          |
+
+---
+
+## 2.2 Main Workflow
+
+The workflow follows a controlled sequence from request intake to completion.
+
+```mermaid
+flowchart TB
+    START["Request Received"]
+    CLASSIFY["Classify Request"]
+    RETRIEVE["Retrieve Knowledge"]
+    POLICY["Check Policy"]
+
+    SAFE{"Safe to Execute?"}
+
+    TOOL["Execute Controlled Tool"]
+    APPROVAL["Request Human Approval"]
+    DECISION{"Approved?"}
+
+    RESPONSE["Generate Response"]
+    AUDIT["Record Audit"]
+    END["Complete"]
+
+    START --> CLASSIFY
+    CLASSIFY --> RETRIEVE
+    RETRIEVE --> POLICY
+    POLICY --> SAFE
+
+    SAFE -->|"Yes"| TOOL
+    SAFE -->|"No"| APPROVAL
+
+    APPROVAL --> DECISION
+    DECISION -->|"Yes"| TOOL
+    DECISION -->|"No"| RESPONSE
+
+    TOOL --> RESPONSE
+    RESPONSE --> AUDIT
+    AUDIT --> END
+```
+
+---
+
+## 2.3 Workflow States
+
+### 1. Request Received
+
+The system receives a natural-language support request.
+
+Example:
+
+> My Wi-Fi keeps disconnecting.
+
+---
+
+### 2. Request Classified
+
+The planner determines the appropriate support category.
 
 Examples:
 
+* Wi-Fi
+* VPN
+* Account assistance
+* Protected account action
+* Support ticket
+* General support
 
+---
 
-\* Wi-Fi → `network\_wifi / check\_wifi`
+### 3. Knowledge Retrieved
 
-\* VPN → `network\_vpn / check\_vpn`
+The system searches the local knowledge base for relevant support information.
 
-\* Account unlock → `account\_access / protected\_action`
-
-\* Ticket creation → `ticket / create\_ticket`
-
-
-
-\### Step 3 — Knowledge Retrieval
-
-
-
-The system searches the internal support knowledge base for relevant guidance.
-
-
-
-Retrieved evidence can include:
-
-
-
-\* troubleshooting instructions;
-
-\* account recovery procedures;
-
-\* VPN guidance;
-
-\* support-ticket information.
-
-
-
-\### Step 4 — Policy Check
-
-
-
-Before executing an action, the policy layer determines whether the requested operation is safe.
-
-
-
-Safe diagnostics may continue.
-
-
-
-Protected actions are routed to human approval.
-
-
-
-\### Step 5A — Safe Tool Execution
-
-
-
-For permitted workflows, the relevant simulated diagnostic tool executes.
-
-
-
-The demonstrator explicitly reports that the operation is simulated.
-
-
-
-\### Step 5B — Human Approval
-
-
-
-For protected actions:
-
-
-
-1\. execution stops;
-
-2\. an approval request is created;
-
-3\. the request appears in the operations dashboard;
-
-4\. an authorized operator reviews it;
-
-5\. the operator approves or rejects it;
-
-6\. the decision and rationale are recorded.
-
-
-
-The demonstrator does not automatically execute the sensitive account/device action.
-
-
-
-\### Step 6 — Response
-
-
-
-The response composer provides:
-
-
-
-\* request category;
-
-\* policy status;
-
-\* result;
-
-\* relevant evidence;
-
-\* workflow trace;
-
-\* next steps.
-
-
-
-\### Step 7 — Audit
-
-
-
-The workflow records relevant events for traceability.
-
-
-
-Examples:
-
-
-
-\* request received;
-
-\* request classified;
-
-\* approval created;
-
-\* approval decision;
-
-\* tool executed;
-
-\* request completed.
-
-
-
-\---
-
-
-
-\## 2.4 Handoffs
-
-
+Example:
 
 ```text
+User Request
+     ↓
+Knowledge Search
+     ↓
+Relevant Support Article
+     ↓
+Workflow Evidence
+```
 
+---
+
+### 4. Policy Checked
+
+The request is evaluated before any action is performed.
+
+Possible outcomes:
+
+* Safe action
+* Human approval required
+* Action blocked
+
+---
+
+### 5. Controlled Tool Execution
+
+Safe diagnostic workflows can use simulated tools.
+
+Examples:
+
+* Wi-Fi diagnostic
+* VPN diagnostic
+* Account status check
+* Support ticket creation
+
+---
+
+### 6. Human Approval
+
+Protected actions are sent to the approval queue.
+
+Examples:
+
+* Unlocking an account
+* Resetting a password
+* Changing access permissions
+* Granting privileged access
+* Restarting a device
+
+The agent does not automatically execute these operations.
+
+---
+
+### 7. Response
+
+The user receives:
+
+* Detected issue
+* Relevant guidance
+* Tool result
+* Approval status where applicable
+* Recommended next steps
+
+---
+
+### 8. Audit
+
+Important workflow events are recorded for traceability.
+
+---
+
+## 2.4 Protected Action Workflow
+
+Protected operations follow a separate approval path.
+
+```mermaid
+flowchart LR
+    REQUEST["Protected Request"]
+    POLICY["Policy Check"]
+    QUEUE["Approval Queue"]
+    APPROVER["Human Approver"]
+    RESULT["Approved / Rejected"]
+    AUDIT["Audit"]
+
+    REQUEST --> POLICY
+    POLICY --> QUEUE
+    QUEUE --> APPROVER
+    APPROVER --> RESULT
+    RESULT --> AUDIT
+```
+
+---
+
+## 2.5 Handoffs
+
+The workflow uses controlled handoffs between logical components.
+
+```text
 User
-
-&#x20; ↓
-
-API
-
-&#x20; ↓
-
+  ↓
 Planner
-
-&#x20; ↓
-
-Knowledge Retriever
-
-&#x20; ↓
-
-Policy Gate
-
-&#x20; ├── Safe → Tool Executor → Response
-
-&#x20; │
-
-&#x20; └── Protected → Human Approver
-
-&#x20;                        ├── Approve → Controlled execution
-
-&#x20;                        └── Reject → Response
-
-```
-
-
-
-Observability receives events from the workflow so that operational activity remains traceable.
-
-
-
-\---
-
-
-
-\## 2.5 Failure Paths
-
-
-
-\### Unknown Request
-
-
-
-If a request does not match a known workflow, the system provides general safe guidance rather than inventing a privileged action.
-
-
-
-\### Missing Knowledge
-
-
-
-If relevant knowledge is unavailable, the system should provide limited safe guidance and avoid claiming unsupported facts.
-
-
-
-\### Tool Failure
-
-
-
-If a diagnostic fails, the system reports the failure rather than claiming that the requested operation succeeded.
-
-
-
-\### Protected Request
-
-
-
-Protected actions stop at the policy gate and require approval.
-
-
-
-\### Rejected Approval
-
-
-
-A rejected action does not proceed.
-
-
-
-\### Future External Integration Failure
-
-
-
-Production integrations should fail closed, record the failure, and escalate when appropriate.
-
-
-
-\---
-
-
-
-\# 3. Deployment Strategy
-
-
-
-\## 3.1 Current Runtime
-
-
-
-AEGISDESK is packaged as a Dockerized FastAPI application.
-
-
-
-Current runtime components:
-
-
-
-\* Python 3.12;
-
-\* FastAPI;
-
-\* Uvicorn;
-
-\* local knowledge files;
-
-\* browser-based frontend;
-
-\* automated tests;
-
-\* Docker Compose.
-
-
-
-The demonstrator exposes the application on port `8000`.
-
-
-
-\## 3.2 Deployment Architecture
-
-
-
-```text
-
-Browser
-
-&#x20;  ↓
-
-Docker Compose
-
-&#x20;  ↓
-
-AEGISDESK Container
-
-&#x20;  ├── FastAPI / Uvicorn
-
-&#x20;  ├── Agent Workflow
-
-&#x20;  ├── Knowledge Base
-
-&#x20;  ├── Simulated Tools
-
-&#x20;  ├── Audit / Metrics
-
-&#x20;  └── Frontend
-
-```
-
-
-
-\## 3.3 Environments
-
-
-
-\### Local
-
-
-
-Purpose:
-
-
-
-\* development;
-
-\* demonstration;
-
-\* debugging;
-
-\* functional testing.
-
-
-
-\### CI / Test
-
-
-
-Purpose:
-
-
-
-\* automated tests;
-
-\* dependency validation;
-
-\* container build validation.
-
-
-
-\### Staging
-
-
-
-Purpose:
-
-
-
-\* integration testing;
-
-\* security testing;
-
-\* workflow validation;
-
-\* representative operational testing.
-
-
-
-\### Production
-
-
-
-A production deployment should use:
-
-
-
-\* container orchestration;
-
-\* authenticated users;
-
-\* durable databases;
-
-\* managed secrets;
-
-\* centralized logging;
-
-\* centralized metrics;
-
-\* enterprise identity and ticketing integrations.
-
-
-
-\---
-
-
-
-\## 3.4 Scaling Strategy
-
-
-
-The current demonstrator is intentionally simple, but the architecture supports horizontal scaling.
-
-
-
-A production deployment can use:
-
-
-
-```text
-
-&#x20;                Load Balancer
-
-&#x20;                      |
-
-&#x20;         +------------+------------+
-
-&#x20;         |            |            |
-
-&#x20;      Agent/API    Agent/API    Agent/API
-
-&#x20;         |            |            |
-
-&#x20;         +------------+------------+
-
-&#x20;                      |
-
-&#x20;         Shared Durable Services
-
-&#x20;         ├── Audit Store
-
-&#x20;         ├── Approval Store
-
-&#x20;         ├── Knowledge Store
-
-&#x20;         └── Queue
-
-```
-
-
-
-The API/agent workers should remain stateless wherever possible.
-
-
-
-Long-running tasks can be moved to asynchronous workers.
-
-
-
-Approval state and audit data should be stored in durable shared storage rather than container-local memory.
-
-
-
-\---
-
-
-
-\## 3.5 Resilience
-
-
-
-Production resilience measures should include:
-
-
-
-\* container restart policies;
-
-\* health checks;
-
-\* request timeouts;
-
-\* bounded retries;
-
-\* circuit breakers for external systems;
-
-\* idempotency keys;
-
-\* durable audit storage;
-
-\* queue-based asynchronous processing;
-
-\* graceful failure;
-
-\* fail-closed policy behavior.
-
-
-
-The system should never convert an integration failure into a false success message.
-
-
-
-\---
-
-
-
-\## 3.6 Release Strategy
-
-
-
-A controlled release process should be:
-
-
-
-```text
-
-Code Change
-
-&#x20;   ↓
-
-Automated Tests
-
-&#x20;   ↓
-
-Container Build
-
-&#x20;   ↓
-
-Health Check
-
-&#x20;   ↓
-
-Representative Workflow Tests
-
-&#x20;   ↓
-
-Staging Deployment
-
-&#x20;   ↓
-
-Smoke Tests
-
-&#x20;   ↓
-
-Production Promotion
-
-&#x20;   ↓
-
-Monitoring
-
-&#x20;   ↓
-
-Rollback if required
-
-```
-
-
-
-Container images should be versioned and immutable so that a known-good version can be restored quickly.
-
-
-
-\---
-
-
-
-\# 4. Security Model
-
-
-
-\## 4.1 Identity
-
-
-
-The prototype does not require external identity infrastructure.
-
-
-
-A production deployment should integrate with enterprise identity providers using mechanisms such as:
-
-
-
-\* OIDC;
-
-\* SAML;
-
-\* MFA;
-
-\* enterprise directory integration.
-
-
-
-\## 4.2 Authorization Roles
-
-
-
-| Role                     | Permissions                                          |
-
-| ------------------------ | ---------------------------------------------------- |
-
-| Support User             | Submit requests and view results                     |
-
-| Agent                    | Retrieve knowledge and execute permitted diagnostics |
-
-| Approver                 | Review and approve/reject protected actions          |
-
-| Operations Administrator | Access operational metrics and audit information     |
-
-
-
-Authorization should be enforced server-side rather than relying on frontend controls.
-
-
-
-\---
-
-
-
-\## 4.3 Secrets Management
-
-
-
-The demonstrator contains no production credentials.
-
-
-
-The project provides `.env.example` for configuration documentation.
-
-
-
-A production deployment should use:
-
-
-
-\* managed secret storage;
-
-\* environment-specific credentials;
-
-\* secret rotation;
-
-\* restricted access;
-
-\* audit logging.
-
-
-
-Secrets must never be committed to source control.
-
-
-
-\---
-
-
-
-\## 4.4 Privacy
-
-
-
-The system should follow data-minimization principles.
-
-
-
-Controls should include:
-
-
-
-\* collect only required support information;
-
-\* avoid storing passwords or authentication tokens;
-
-\* restrict access to support records;
-
-\* define retention periods;
-
-\* protect audit data;
-
-\* redact sensitive information from logs where necessary.
-
-
-
-\---
-
-
-
-\## 4.5 Agent Guardrails
-
-
-
-AEGISDESK applies policy before sensitive tool execution.
-
-
-
-Important controls include:
-
-
-
-1\. protected-action detection;
-
-2\. human approval;
-
-3\. narrow tool interfaces;
-
-4\. explicit simulated integrations;
-
-5\. safe fallback behavior;
-
-6\. auditability;
-
-7\. fail-closed behavior.
-
-
-
-The agent should not interpret user instructions as permission to bypass security controls.
-
-
-
-\---
-
-
-
-\## 4.6 Threat Model
-
-
-
-| Threat                      | Risk                                                | Control                                            |
-
-| --------------------------- | --------------------------------------------------- | -------------------------------------------------- |
-
-| Prompt injection            | Agent may be instructed to bypass intended behavior | Policy enforcement outside user-controlled content |
-
-| Unauthorized account change | Sensitive action performed without authorization    | Human approval gate                                |
-
-| Secret leakage              | Credentials exposed through logs or responses       | Secret management and data minimization            |
-
-| Tool misuse                 | Agent invokes inappropriate capabilities            | Narrow tools and policy checks                     |
-
-| False success               | System claims an action succeeded when it did not   | Explicit tool results and failure handling         |
-
-| Audit tampering             | Operational evidence becomes unreliable             | Restricted durable audit storage                   |
-
-| Denial of service           | Excessive requests affect availability              | Rate limits, queues and resource controls          |
-
-
-
-\---
-
-
-
-\## 4.7 Audit Model
-
-
-
-Important events should contain:
-
-
-
-\* request ID;
-
-\* timestamp;
-
-\* request category;
-
-\* requested action;
-
-\* policy outcome;
-
-\* tool result;
-
-\* approval ID where applicable;
-
-\* approver;
-
-\* decision;
-
-\* rationale;
-
-\* final outcome.
-
-
-
-This allows an operator to reconstruct what happened during a support workflow.
-
-
-
-\---
-
-
-
-\# 5. Monitoring Dashboard Design
-
-
-
-\## 5.1 Monitoring Objectives
-
-
-
-The monitoring system should provide visibility into:
-
-
-
-1\. service health;
-
-2\. workflow execution;
-
-3\. response quality;
-
-4\. security and safety;
-
-5\. operational cost;
-
-6\. business outcomes.
-
-
-
-\---
-
-
-
-\## 5.2 Health Metrics
-
-
-
-Recommended health indicators:
-
-
-
-\* API availability;
-
-\* container status;
-
-\* request throughput;
-
-\* error rate;
-
-\* average latency;
-
-\* p95/p99 latency;
-
-\* retrieval failures;
-
-\* tool failures.
-
-
-
-The demonstrator exposes a health endpoint and operational metrics API.
-
-
-
-\---
-
-
-
-\## 5.3 Trace Metrics
-
-
-
-Every workflow should be traceable using:
-
-
-
-\* request ID;
-
-\* request category;
-
-\* selected action;
-
-\* workflow stages;
-
-\* evidence retrieved;
-
-\* policy outcome;
-
-\* tool outcome;
-
-\* duration.
-
-
-
-The UI demonstrates a six-stage trace:
-
-
-
-```text
-
-Intake
-
-&#x20; ↓
-
-Planner
-
-&#x20; ↓
-
+  ↓
 Knowledge Retrieval
-
-&#x20; ↓
-
-Tool Execution
-
-&#x20; ↓
-
-Policy Gate
-
-&#x20; ↓
-
+  ↓
+Policy Engine
+  ↓
+Safe Tool OR Human Approval
+  ↓
 Response
-
+  ↓
+Audit
 ```
 
+Each handoff should preserve the request context and workflow state.
 
+---
 
-\---
+## 2.6 Failure Paths
 
+The system should fail safely when an expected operation cannot be completed.
 
+| Failure                  | Expected Behaviour                        |
+| ------------------------ | ----------------------------------------- |
+| No relevant knowledge    | Provide safe generic guidance or escalate |
+| Tool failure             | Report failure and avoid unsafe retries   |
+| Policy violation         | Block the action                          |
+| Approval rejected        | Do not execute the protected action       |
+| Approval timeout         | Keep pending or escalate                  |
+| Invalid request          | Request clarification                     |
+| Unexpected tool response | Stop the workflow and record the failure  |
 
-\## 5.4 Quality Metrics
+---
 
+# 3. Deployment Strategy
 
+## 3.1 Current Deployment
 
-Production monitoring should measure:
+The demonstrator is designed to run locally using Docker Compose.
 
+```mermaid
+flowchart TB
+    BROWSER["Web Browser"]
+    DOCKER["Docker Container"]
+    API["FastAPI + Uvicorn"]
+    FRONTEND["Web Frontend"]
+    KNOWLEDGE["Local Knowledge Base"]
 
+    BROWSER --> DOCKER
+    DOCKER --> API
+    DOCKER --> FRONTEND
+    API --> KNOWLEDGE
+```
 
-\* first-contact resolution;
+The current implementation uses a single container to keep the academic demonstrator simple and reproducible.
 
-\* successful diagnostic completion;
+---
 
-\* knowledge retrieval hit rate;
+## 3.2 Runtime Stack
 
-\* escalation rate;
+| Component          | Technology            |
+| ------------------ | --------------------- |
+| Frontend           | HTML, CSS, JavaScript |
+| Backend            | Python                |
+| API Framework      | FastAPI               |
+| Application Server | Uvicorn               |
+| Knowledge          | Markdown files        |
+| Containerization   | Docker                |
+| Orchestration      | Docker Compose        |
+| Testing            | Pytest                |
 
-\* repeated requests;
+---
 
-\* user feedback;
+## 3.3 Environment Strategy
 
-\* tool success rate;
+A production-oriented implementation can use separate environments.
 
-\* unsupported request rate.
+```text
+Development
+     ↓
+Continuous Integration
+     ↓
+Staging
+     ↓
+Production
+```
 
+### Development
 
+Used for:
 
-These metrics help identify whether the agent is actually reducing support workload rather than merely generating responses.
+* Local development
+* Debugging
+* Workflow testing
+* Simulated integrations
 
+### Continuous Integration
 
+Used for:
 
-\---
+* Automated tests
+* Build validation
+* Security checks
+* Container validation
 
+### Staging
 
+Used for:
 
-\## 5.5 Safety Metrics
+* Integration testing
+* Security testing
+* Performance testing
+* Approval workflow testing
 
+### Production
 
+Used for:
+
+* Controlled enterprise operation
+* Real monitoring
+* Enterprise identity
+* Approved integrations
+* Audited tool execution
+
+---
+
+## 3.4 Production Scaling
+
+The single-container demonstrator can be extended to multiple agent instances.
+
+```mermaid
+flowchart TB
+    USERS["Users"]
+    GATEWAY["API Gateway"]
+
+    AGENT1["Agent Instance"]
+    AGENT2["Agent Instance"]
+    AGENT3["Agent Instance"]
+
+    POLICY["Policy Service"]
+    TOOLS["Tool Gateway"]
+    APPROVAL["Approval Service"]
+    OBS["Observability"]
+
+    USERS --> GATEWAY
+
+    GATEWAY --> AGENT1
+    GATEWAY --> AGENT2
+    GATEWAY --> AGENT3
+
+    AGENT1 --> POLICY
+    AGENT2 --> POLICY
+    AGENT3 --> POLICY
+
+    POLICY --> TOOLS
+    POLICY --> APPROVAL
+
+    AGENT1 --> OBS
+    AGENT2 --> OBS
+    AGENT3 --> OBS
+    TOOLS --> OBS
+    APPROVAL --> OBS
+```
+
+This allows agent workloads and supporting services to scale independently.
+
+---
+
+## 3.5 Resilience Strategy
+
+Potential resilience mechanisms include:
+
+* Container health checks
+* Automatic service restart
+* Request timeouts
+* Controlled retries
+* Idempotent tool operations
+* Circuit breakers for external services
+* Queue-based approval workflows
+* Centralized logging
+* Graceful degradation
+* Backup and recovery procedures
+
+Sensitive operations should fail closed when authorization cannot be established.
+
+---
+
+## 3.6 Release Strategy
+
+A production release can follow:
+
+```text
+Developer Change
+      ↓
+Code Review
+      ↓
+Automated Tests
+      ↓
+Security Checks
+      ↓
+Container Build
+      ↓
+Staging Deployment
+      ↓
+Validation
+      ↓
+Production Approval
+      ↓
+Production Deployment
+```
+
+A rollback mechanism should be available for failed deployments.
+
+---
+
+# 4. Security Model
+
+## 4.1 Security Principles
+
+AEGISDESK follows:
+
+* Least privilege
+* Explicit authorization
+* Human oversight
+* Policy enforcement
+* Secure secret management
+* Data minimization
+* Auditability
+* Fail-safe execution
+
+---
+
+## 4.2 Identity Model
+
+A production deployment should use an enterprise identity provider.
+
+```mermaid
+flowchart LR
+    USER["Employee"]
+    IDP["Identity Provider"]
+    API["AEGISDESK API"]
+    POLICY["Authorization Policy"]
+    TOOLS["Controlled Tools"]
+
+    USER --> IDP
+    IDP --> API
+    API --> POLICY
+    POLICY --> TOOLS
+```
+
+The current demonstrator does not require a real identity provider.
+
+---
+
+## 4.3 Role-Based Authorization
+
+| Role          | Typical Permissions                 |
+| ------------- | ----------------------------------- |
+| Employee      | Submit requests and view results    |
+| Support Agent | Investigate support requests        |
+| Approver      | Approve or reject protected actions |
+| Administrator | Manage configuration and policies   |
+
+Authorization should be enforced by application controls rather than relying only on the AI agent.
+
+---
+
+## 4.4 Secrets Management
+
+Secrets should never be hard-coded into the source code.
+
+Production implementations should use:
+
+* Environment variables
+* Secret managers
+* Short-lived credentials
+* Credential rotation
+* Restricted access
+* Log redaction
+
+The repository should contain safe configuration examples rather than real credentials.
+
+---
+
+## 4.5 Privacy
+
+The application should minimize unnecessary collection of user information.
+
+Recommended practices:
+
+* Store only information required for support.
+* Avoid unnecessary sensitive information.
+* Restrict access to audit records.
+* Apply retention policies.
+* Protect user-related logs.
+* Redact sensitive information from traces where appropriate.
+
+---
+
+## 4.6 Guardrails
+
+A protected operation should pass through multiple controls.
+
+```mermaid
+flowchart TB
+    REQUEST["User Request"]
+    AGENT["Agent Interpretation"]
+    POLICY["Policy Evaluation"]
+    AUTH["Authorization Check"]
+    APPROVAL["Human Approval"]
+    TOOL["Controlled Tool"]
+    AUDIT["Audit"]
+
+    REQUEST --> AGENT
+    AGENT --> POLICY
+    POLICY --> AUTH
+    AUTH --> APPROVAL
+    APPROVAL --> TOOL
+    TOOL --> AUDIT
+```
+
+This prevents a natural-language request from directly becoming a privileged enterprise operation.
+
+---
+
+## 4.7 Threat Model
+
+| Threat               | Risk                                                    | Mitigation                           |
+| -------------------- | ------------------------------------------------------- | ------------------------------------ |
+| Prompt injection     | Agent may be instructed to bypass intended behaviour    | External policy enforcement          |
+| Unauthorized action  | Sensitive operation may be performed without permission | Role-based authorization             |
+| Excessive privileges | Agent may access unnecessary systems                    | Least privilege                      |
+| Tool misuse          | Incorrect parameters may affect systems                 | Tool validation and gateway          |
+| Credential exposure  | Secrets may appear in source or logs                    | Secret management and redaction      |
+| Data leakage         | Sensitive information may be exposed                    | Data minimization and access control |
+| Audit tampering      | Activity may become difficult to investigate            | Protected audit storage              |
+| Tool failure         | Unsafe or incomplete results                            | Validation and fail-safe handling    |
+
+---
+
+## 4.8 Audit Model
+
+Important events should contain information such as:
+
+| Field           | Purpose                      |
+| --------------- | ---------------------------- |
+| Request ID      | Correlates workflow events   |
+| Timestamp       | Establishes event order      |
+| Actor           | Identifies user or approver  |
+| Action          | Describes the operation      |
+| Policy Decision | Records the safety decision  |
+| Tool            | Identifies the tool involved |
+| Approval        | Records approval status      |
+| Result          | Records success or failure   |
+
+Audit records should be protected against unauthorized modification.
+
+---
+
+# 5. Monitoring Dashboard Design
+
+## 5.1 Monitoring Architecture
+
+The monitoring system collects workflow, health, audit, and usage information.
+
+```mermaid
+flowchart TB
+    WORKFLOW["Agent Workflow"]
+
+    TRACE["Workflow Trace"]
+    AUDIT["Audit Events"]
+    HEALTH["Health Metrics"]
+    USAGE["Usage Metrics"]
+
+    DASHBOARD["Operations Dashboard"]
+
+    WORKFLOW --> TRACE
+    WORKFLOW --> AUDIT
+    WORKFLOW --> HEALTH
+    WORKFLOW --> USAGE
+
+    TRACE --> DASHBOARD
+    AUDIT --> DASHBOARD
+    HEALTH --> DASHBOARD
+    USAGE --> DASHBOARD
+```
+
+---
+
+## 5.2 Health Metrics
+
+The dashboard should provide:
+
+* API availability
+* Request count
+* Error count
+* Error rate
+* Tool availability
+* Average response duration
+* Service restart count
+
+---
+
+## 5.3 Workflow Trace
+
+Each request should be traceable through the major stages.
+
+```text
+Request Received
+      ↓
+Classified
+      ↓
+Knowledge Retrieved
+      ↓
+Policy Evaluated
+      ↓
+Tool Selected
+      ↓
+Tool Executed / Approval Requested
+      ↓
+Response Generated
+      ↓
+Audit Recorded
+```
+
+A request ID should correlate these events.
+
+---
+
+## 5.4 Quality Metrics
+
+Potential quality indicators include:
+
+* Successful resolutions
+* Escalation rate
+* Tool success rate
+* Knowledge retrieval success
+* Average handling time
+* Repeated requests
+* User follow-up rate
+
+These metrics can identify workflows that require improvement.
+
+---
+
+## 5.5 Safety Metrics
 
 Safety monitoring should include:
 
+* Protected actions
+* Policy blocks
+* Approval requests
+* Approvals
+* Rejections
+* Approval timeouts
+* Tool authorization failures
 
+Safety metrics should be investigated alongside audit records.
 
-\* protected actions requested;
+---
 
-\* approvals created;
+## 5.6 Cost and Resource Metrics
 
-\* approvals granted;
+For an enterprise deployment, the dashboard can monitor:
 
-\* approvals rejected;
+* Model requests
+* Token consumption
+* Tool calls
+* API usage
+* Compute utilization
+* Container resource usage
+* Infrastructure cost
 
-\* policy blocks;
+The local demonstrator can represent these concepts without requiring paid model infrastructure.
 
-\* attempted policy bypasses;
+---
 
-\* sensitive-data events;
+## 5.7 Business Outcome Metrics
 
-\* unauthorized tool attempts.
+| Metric                | Purpose                                  |
+| --------------------- | ---------------------------------------- |
+| Requests handled      | Measures workload                        |
+| Resolution rate       | Measures support effectiveness           |
+| Average handling time | Measures operational efficiency          |
+| Escalation rate       | Measures human intervention              |
+| Approval turnaround   | Measures protected workflow efficiency   |
+| Repeat requests       | Identifies potentially unresolved issues |
 
+These metrics should be interpreted together rather than as isolated indicators.
 
+---
 
-The current dashboard includes:
+## 5.8 Current Dashboard Mapping
 
+The AEGISDESK demonstrator provides an operations view containing:
 
+* Total workflow runs
+* Pending approvals
+* Safety blocks
+* Average duration
+* Recent requests
+* Approval queue
+* Audit activity
+* Application health
 
-\* pending approvals;
+This allows the evaluator to observe both normal and protected workflows.
 
-\* safety blocks;
+---
 
-\* approval queue;
+# 6. Demonstration Workflows
 
-\* audit activity.
+## 6.1 Wi-Fi Troubleshooting
 
+**Example request:**
 
+> My Wi-Fi keeps disconnecting.
 
-\---
-
-
-
-\## 5.6 Cost Metrics
-
-
-
-A production agent using external models should track:
-
-
-
-\* input tokens;
-
-\* output tokens;
-
-\* model cost;
-
-\* retrieval cost;
-
-\* tool/API cost;
-
-\* cost per support request;
-
-\* cost per resolved request.
-
-
-
-The current AEGISDESK demonstrator does not depend on a paid external model/API, so external model billing is not currently applicable.
-
-
-
-\---
-
-
-
-\## 5.7 Business Outcome Metrics
-
-
-
-Important enterprise KPIs include:
-
-
-
-\* tickets created;
-
-\* mean time to resolution;
-
-\* first-contact resolution;
-
-\* escalation volume;
-
-\* requests by category;
-
-\* workload avoided;
-
-\* approval turnaround time;
-
-\* support requests resolved without escalation.
-
-
-
-These metrics connect technical agent performance to actual IT support outcomes.
-
-
-
-\---
-
-
-
-\## 5.8 Current Dashboard Mapping
-
-
-
-The current AEGISDESK operations dashboard demonstrates:
-
-
-
-| Dashboard Area  | Current Metric / Information      |
-
-| --------------- | --------------------------------- |
-
-| Health          | API health status                 |
-
-| Runs            | Total workflow runs               |
-
-| Approvals       | Pending approval count            |
-
-| Safety          | Safety block count                |
-
-| Performance     | Average workflow duration         |
-
-| Approval Queue  | Pending protected actions         |
-
-| Recent Requests | Recent categories/actions/results |
-
-| Audit Activity  | Request and approval events       |
-
-
-
-The application also exposes health, metrics, audit, approval, and dashboard APIs for future integration with enterprise observability platforms.
-
-
-
-\---
-
-
-
-\# Conclusion
-
-
-
-AEGISDESK demonstrates an agentic IT support architecture in which autonomous assistance is combined with explicit governance.
-
-
-
-The key design principle is that the agent may assist with understanding requests, retrieving knowledge, and performing safe diagnostics, while sensitive account or device actions remain behind a human approval boundary.
-
-
-
-The architecture therefore separates:
-
-
+**Workflow:**
 
 ```text
-
-Understand
-
-&#x20;   ↓
-
-Retrieve
-
-&#x20;   ↓
-
-Plan
-
-&#x20;   ↓
-
-Check Policy
-
-&#x20;   ↓
-
-Execute Safely OR Request Approval
-
-&#x20;   ↓
-
-Respond
-
-&#x20;   ↓
-
+Request
+  ↓
+Wi-Fi Classification
+  ↓
+Knowledge Retrieval
+  ↓
+Policy Check
+  ↓
+Simulated Wi-Fi Diagnostic
+  ↓
+Troubleshooting Guidance
+  ↓
 Audit
-
-&#x20;   ↓
-
-Monitor
-
 ```
 
+The workflow demonstrates safe diagnostic automation.
 
+---
 
-The current implementation provides a reproducible Dockerized demonstrator, local support knowledge, simulated tools, approval workflows, auditability, health/metrics APIs, automated tests, and an operations dashboard.
+## 6.2 VPN Troubleshooting
 
+**Example request:**
 
+> My corporate VPN is not connecting.
 
-The architecture can subsequently be extended with authenticated enterprise identity, real ticketing systems, durable storage, production observability, asynchronous workers, and controlled IT infrastructure adapters while retaining the same policy-first and human-in-the-loop safety model.
+**Workflow:**
 
+```text
+Request
+  ↓
+VPN Classification
+  ↓
+Knowledge Retrieval
+  ↓
+Policy Check
+  ↓
+Simulated VPN Diagnostic
+  ↓
+Troubleshooting Guidance
+  ↓
+Audit
+```
 
+---
 
+## 6.3 Protected Account Action
+
+**Example request:**
+
+> Please unlock my account.
+
+**Workflow:**
+
+```text
+Request
+  ↓
+Protected Action Detected
+  ↓
+Policy Check
+  ↓
+Approval Required
+  ↓
+Approval Queue
+  ↓
+Human Decision
+  ↓
+Approve / Reject
+  ↓
+Audit
+```
+
+The sensitive action is not automatically performed.
+
+---
+
+## 6.4 Support Ticket
+
+**Example request:**
+
+> Create a support ticket for my issue.
+
+**Workflow:**
+
+```text
+Request
+  ↓
+Ticket Classification
+  ↓
+Policy Check
+  ↓
+Simulated Ticket Tool
+  ↓
+Demo Ticket ID
+  ↓
+Audit
+```
+
+The ticket tool is explicitly simulated and does not contact a real external ticketing system.
+
+---
+
+# 7. Current Implementation Mapping
+
+| Component           | Demonstrator Implementation   |
+| ------------------- | ----------------------------- |
+| User Interface      | Browser-based frontend        |
+| API                 | FastAPI                       |
+| Agent Planner       | Deterministic request planner |
+| Knowledge Retrieval | Local Markdown knowledge base |
+| Policy              | Protected-action detection    |
+| Tool Layer          | Simulated IT tools            |
+| Approval            | In-memory approval queue      |
+| Audit               | In-memory audit events        |
+| Metrics             | Application metrics           |
+| Dashboard           | Operations view               |
+| Deployment          | Docker Compose                |
+| Testing             | Pytest                        |
+
+The deterministic planner is intentional for this academic demonstrator. A production implementation could replace or augment it with an LLM-based planner while retaining the external policy and authorization controls.
+
+---
+
+# 8. Production Extension Architecture
+
+The demonstrator can be extended into a production-oriented architecture while preserving its safety model.
+
+```mermaid
+flowchart TB
+    USERS["Employees"]
+    IDP["Enterprise Identity"]
+    GATEWAY["API Gateway"]
+    AGENT["Agent Orchestrator"]
+    KNOWLEDGE["Enterprise Knowledge"]
+    POLICY["Policy Engine"]
+    APPROVAL["Approval Service"]
+    TOOLS["Tool Gateway"]
+
+    TICKETING["ITSM / Ticketing"]
+    ENDPOINT["Endpoint Management"]
+    NETWORK["Network / VPN"]
+    OBS["Centralized Observability"]
+
+    USERS --> IDP
+    IDP --> GATEWAY
+    GATEWAY --> AGENT
+
+    AGENT --> KNOWLEDGE
+    AGENT --> POLICY
+
+    POLICY --> APPROVAL
+    POLICY --> TOOLS
+
+    TOOLS --> TICKETING
+    TOOLS --> ENDPOINT
+    TOOLS --> NETWORK
+
+    AGENT --> OBS
+    POLICY --> OBS
+    APPROVAL --> OBS
+    TOOLS --> OBS
+```
+
+Enterprise integrations remain behind controlled interfaces.
+
+The agent should not receive unrestricted direct access to enterprise infrastructure.
+
+---
+
+# 9. Overall Design Principle
+
+The complete system follows:
+
+```text
+UNDERSTAND
+    ↓
+PLAN
+    ↓
+RETRIEVE
+    ↓
+CHECK POLICY
+    ↓
+ACT SAFELY
+    ↓
+REQUEST HUMAN APPROVAL WHEN REQUIRED
+    ↓
+TRACE
+    ↓
+AUDIT
+    ↓
+RESPOND
+```
+
+AEGISDESK demonstrates that an enterprise agentic IT support system requires more than conversational AI.
+
+It combines:
+
+* Intelligent workflow planning
+* Knowledge retrieval
+* Controlled tool use
+* Authorization
+* Human oversight
+* Security guardrails
+* Auditability
+* Monitoring
+* Failure handling
+
+---
+
+# 10. Conclusion
+
+AEGISDESK provides a controlled demonstration of an enterprise-oriented agentic IT support architecture.
+
+The project combines an agent planner, internal knowledge retrieval, simulated diagnostic tools, protected-action approval workflows, audit tracing, operational metrics, and a monitoring dashboard.
+
+The demonstrator intentionally separates **decision-making from privileged execution**. Safe diagnostic workflows can proceed automatically, while sensitive actions are routed through policy checks and human approval.
+
+The architecture can later be extended with enterprise identity, ticketing, endpoint management, network systems, centralized observability, and other controlled integrations.
+
+The central principle of the system is:
+
+> **Automate routine support safely, keep privileged actions controlled, and make important decisions traceable.**
