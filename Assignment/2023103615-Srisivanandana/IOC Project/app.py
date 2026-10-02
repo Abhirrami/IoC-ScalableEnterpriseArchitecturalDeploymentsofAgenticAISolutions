@@ -847,7 +847,7 @@ def render_copilot_message(message, message_index):
             st.info(f"✓ Already in Tasks: {task.get('title')}")
 
 
-def render_copilot():
+def render_copilot(store):
     st.title("🤖 Campus Copilot")
     st.caption("Your intelligent academic and campus assistant.")
 
@@ -1653,7 +1653,7 @@ def main():
     if page == "🏠 Dashboard":
         render_dashboard()
     elif page == "🤖 Copilot":
-        render_copilot()
+        render_copilot(store)
     elif page == "📚 Academics":
         render_academics()
     elif page == "💼 Placements":

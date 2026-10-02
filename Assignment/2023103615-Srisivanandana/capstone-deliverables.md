@@ -1,5 +1,20 @@
 # Campus Copilot · Capstone Deliverables
 
+### Live Application
+
+🌐 **[Launch Campus Copilot](https://campus-copilot-srisivanandana.streamlit.app/)**
+
+The application is deployed using Streamlit Community Cloud and uses Supabase for authentication, PostgreSQL persistence, and Row Level Security.
+
+### Demo Login
+
+For quick evaluation, use the following dedicated demo account:
+
+- **Email:** `user@gmail.com`
+- **Password:** `user@123`
+
+After signing in, the evaluator can explore the Dashboard, Copilot, Academics, Placements, Calendar, Study Progress, and Tasks modules.
+
 **Multi-user student assistant** · Streamlit · Supabase Auth · PostgreSQL with RLS
 
 Campus Copilot uses the authenticated student's UUID to retrieve and update only that student's campus data. `campus_data.json` is retained only as an opt-in demo seed.

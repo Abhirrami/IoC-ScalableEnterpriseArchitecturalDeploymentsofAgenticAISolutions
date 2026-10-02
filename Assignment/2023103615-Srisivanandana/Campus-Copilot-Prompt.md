@@ -986,6 +986,21 @@ must be excluded using `.gitignore`.
 
 Use Python 3.11+ and ensure the selected Streamlit Cloud Python version is compatible with all dependencies.
 
+### Live Application
+
+🌐 **[Launch Campus Copilot](https://campus-copilot-srisivanandana.streamlit.app/)**
+
+The application is deployed using Streamlit Community Cloud and uses Supabase for authentication, PostgreSQL persistence, and Row Level Security.
+
+### Demo Login
+
+For quick evaluation, use the following dedicated demo account:
+
+- **Email:** `user@gmail.com`
+- **Password:** `user@123`
+
+After signing in, the evaluator can explore the Dashboard, Copilot, Academics, Placements, Calendar, Study Progress, and Tasks modules.
+
 ---
 
 # 31. GITHUB PROJECT STRUCTURE
