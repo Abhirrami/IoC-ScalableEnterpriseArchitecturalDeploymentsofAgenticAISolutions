@@ -72,6 +72,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Helper function to invoke st.button cleanly across Streamlit versions
+def render_button(label, type="secondary", width="full", key=None):
+    try:
+        return st.button(label, type=type, width=width, key=key)
+    except TypeError:
+        return st.button(label, type=type, use_container_width=True, key=key)
+
 # -----------------------------------------------------------------------------
 # 2. SESSION STATE INITIALIZATION
 # -----------------------------------------------------------------------------
@@ -122,12 +129,12 @@ persona = st.sidebar.selectbox(
 st.sidebar.markdown("---")
 st.sidebar.subheader("🚀 Run Autonomous Workflows")
 
-if st.sidebar.button("▶ Run Standard Scan (Low Risk)", type="primary", use_container_width=True):
+if render_button("▶ Run Standard Scan (Low Risk)", type="primary", key="btn_scan"):
     with st.spinner("Executing autonomous agent scan loop..."):
         agent.run_patch_workflow(simulate_critical=False, manifest_type="package.json")
         st.rerun()
 
-if st.sidebar.button("⚠️ Simulate Critical Breaking CVE Patch", use_container_width=True):
+if render_button("⚠️ Simulate Critical Breaking CVE Patch", key="btn_crit"):
     with st.spinner("Simulating high-risk CVE dependency update..."):
         agent.run_patch_workflow(simulate_critical=True, manifest_type="package.json")
         st.rerun()
@@ -135,7 +142,7 @@ if st.sidebar.button("⚠️ Simulate Critical Breaking CVE Patch", use_containe
 with st.sidebar.expander("📄 Upload Custom Dependency Manifest"):
     uploaded_file = st.file_uploader("Upload package.json, requirements.txt, or pom.xml", type=["json", "txt", "xml"])
     manifest_type = st.selectbox("Manifest Type", ["package.json", "requirements.txt", "pom.xml"])
-    if st.button("▶ Run Scan on Uploaded File", use_container_width=True):
+    if render_button("▶ Run Scan on Uploaded File", key="btn_upload"):
         if uploaded_file is not None:
             content = uploaded_file.getvalue().decode("utf-8")
             agent.run_patch_workflow(simulate_critical=False, custom_manifest=content, manifest_type=manifest_type)
@@ -150,10 +157,9 @@ st.sidebar.subheader("⚙️ Governance Parameters")
 approval_threshold = st.sidebar.slider("Approval Risk Threshold", min_value=0.1, max_value=0.9, value=0.5, step=0.05)
 guardrails_active = st.sidebar.toggle("SecretSanitizerGuardrail", value=True)
 
-if st.sidebar.button("🔄 Reset Agent State", use_container_width=True):
+if render_button("🔄 Reset Agent State", key="btn_reset"):
     st.session_state.agent = PatchCraftAgentEngine()
     st.rerun()
-
 
 # -----------------------------------------------------------------------------
 # 5. HUMAN-IN-THE-LOOP APPROVAL INTERFACE (MODAL ALERT)
@@ -181,12 +187,12 @@ if summary['state'] == 'AWAITING_APPROVAL' and summary['pendingApproval']:
         
         col_app, col_rej = st.columns(2)
         with col_app:
-            if st.button("✔ Approve & Execute Sandbox", type="primary", use_container_width=True):
+            if render_button("✔ Approve & Execute Sandbox", type="primary", key="btn_appr"):
                 agent.continue_post_approval(approval_signature=signature)
                 st.success("Human Approval GRANTED. Resuming agent execution...")
                 st.rerun()
         with col_rej:
-            if st.button("✖ Reject & Terminate Patch", use_container_width=True):
+            if render_button("✖ Reject & Terminate Patch", key="btn_rej"):
                 agent.reject_patch(rejection_reason=f"Rejected by {persona}. Note: {signature}")
                 st.error("Patch workflow rejected and terminated.")
                 st.rerun()
@@ -359,7 +365,7 @@ with tab_docs:
     st.subheader("🏆 Capstone Architectural Deliverables & Report Export")
     
     st.markdown("""
-    This project satisfies all **5 Enterprise Capstone Deliverables** for *Scalable Enterprise Architectural Deployments of Agentic AI Solutions* (Anna University R2023):
+    This project satisfies all **5 Enterprise Capstone Deliverables** for *Scalable Enterprise Architectural Deployments of Agentic AI Solutions*:
     """)
     
     c1, c2, c3 = st.columns(3)
