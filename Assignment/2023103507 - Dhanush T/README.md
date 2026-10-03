@@ -1,3 +1,5 @@
+Deployed Link - https://dev-pulse-ticket-management--tdhanush8124.replit.app/login
+
 # DevPulse
 
 DevPulse is a role-based ticket manager for reporters, developers, and admins. It includes searchable tickets, strict status transitions, comments, activity history, dashboard counts, and user-role management.
